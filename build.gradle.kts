@@ -136,9 +136,25 @@ dependencies {
         name = "ktor-client-okhttp",
         version = Lib.KTOR
     )
+
     implementation(
         group = "io.ktor",
         name = "ktor-server-cio",
+        version = Lib.KTOR
+    )
+    implementation(
+        group = "io.ktor",
+        name = "ktor-locations",
+        version = Lib.KTOR
+    )
+    implementation(
+        group = "io.ktor",
+        name = "ktor-jackson",
+        version = Lib.KTOR
+    )
+    implementation(
+        group = "io.ktor",
+        name = "ktor-auth-jwt",
         version = Lib.KTOR
     )
 

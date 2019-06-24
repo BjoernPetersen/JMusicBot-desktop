@@ -3,8 +3,6 @@ package net.bjoernpetersen.deskbot.lifecycle
 import com.google.inject.Guice
 import com.google.inject.Injector
 import com.google.inject.Module
-import io.vertx.core.Vertx
-import io.vertx.kotlin.core.closeAwait
 import javafx.application.Platform
 import javafx.concurrent.Task
 import kotlinx.coroutines.CoroutineScope
@@ -25,8 +23,7 @@ import net.bjoernpetersen.deskbot.impl.FileStorageImpl
 import net.bjoernpetersen.deskbot.impl.ImageLoaderImpl
 import net.bjoernpetersen.deskbot.impl.MainConfigEntries
 import net.bjoernpetersen.deskbot.impl.SongPlayedNotifierModule
-import net.bjoernpetersen.deskbot.rest.RestModule
-import net.bjoernpetersen.deskbot.rest.RestServer
+import net.bjoernpetersen.deskbot.ktor.KtorServer
 import net.bjoernpetersen.deskbot.view.DeskBot
 import net.bjoernpetersen.deskbot.view.get
 import net.bjoernpetersen.deskbot.view.show
@@ -164,7 +161,6 @@ class Lifecyclist : CoroutineScope {
         PluginModule(pluginFinder),
         BrowserOpenerModule(browserOpener),
         SongPlayedNotifierModule(),
-        RestModule(),
         DefaultImageCacheModule(),
         ImageLoaderImpl,
         DefaultResourceCacheModule(),
@@ -208,9 +204,8 @@ class Lifecyclist : CoroutineScope {
 
                 injector.getInstance(Player::class.java).start()
 
-                val vertx = injector.getInstance(Vertx::class.java)
-                val rest = injector.getInstance(RestServer::class.java)
-                vertx.deployVerticle(rest)
+                val ktor = injector.getInstance(KtorServer::class.java)
+                ktor.start()
 
                 broadcaster = Broadcaster().apply { start() }
 
@@ -253,8 +248,8 @@ class Lifecyclist : CoroutineScope {
             coroutineScope {
                 withContext(coroutineContext) {
                     val stopper = InstanceStopper(injector).apply {
-                        register(Vertx::class.java) { vertx ->
-                            vertx.closeAwait()
+                        register(KtorServer::class.java) { ktor ->
+                            ktor.close()
                         }
                     }
                     stopper.stop()
