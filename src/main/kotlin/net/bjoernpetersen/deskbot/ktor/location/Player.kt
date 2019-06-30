@@ -10,6 +10,7 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import mu.KotlinLogging
+import net.bjoernpetersen.deskbot.ktor.require
 import net.bjoernpetersen.deskbot.rest.model.PlayerState
 import net.bjoernpetersen.deskbot.rest.model.PlayerStateAction
 import net.bjoernpetersen.deskbot.rest.model.PlayerStateChange
@@ -21,6 +22,7 @@ import javax.inject.Inject
 
 private val logger = KotlinLogging.logger {}
 
+@KtorExperimentalLocationsAPI
 @Location("")
 class PlayerStateRequest
 
@@ -29,17 +31,14 @@ class PlayerAccess @Inject private constructor(
     val progressTracker: ProgressTracker
 ) {
     suspend fun resume() {
-        ctx.require(Permission.PAUSE)
         player.play()
     }
 
     suspend fun pause() {
-        ctx.require(Permission.PAUSE)
         player.pause()
     }
 
     suspend fun skip() {
-        ctx.require(Permission.SKIP)
         player.next()
     }
 
@@ -61,7 +60,6 @@ class PlayerAccess @Inject private constructor(
     }
 }
 
-
 @KtorExperimentalLocationsAPI
 fun Route.player(playerAccess: PlayerAccess) {
     playerAccess.apply {
@@ -71,15 +69,20 @@ fun Route.player(playerAccess: PlayerAccess) {
             }
 
             put<PlayerStateRequest> {
-
                 val change: PlayerStateChange = call.receive()
                 when (change.action) {
                     PlayerStateAction.PLAY -> {
-
+                        require(Permission.PAUSE)
                         resume()
                     }
-                    PlayerStateAction.PAUSE -> pause()
-                    PlayerStateAction.SKIP -> skip()
+                    PlayerStateAction.PAUSE -> {
+                        require(Permission.PAUSE)
+                        pause()
+                    }
+                    PlayerStateAction.SKIP -> {
+                        require(Permission.SKIP)
+                        skip()
+                    }
                 }
                 call.respond(getPlayerState())
             }

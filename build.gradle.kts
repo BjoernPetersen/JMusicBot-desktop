@@ -154,7 +154,7 @@ dependencies {
     )
     implementation(
         group = "io.ktor",
-        name = "ktor-auth-jwt",
+        name = "ktor-auth-basic",
         version = Lib.KTOR
     )
 

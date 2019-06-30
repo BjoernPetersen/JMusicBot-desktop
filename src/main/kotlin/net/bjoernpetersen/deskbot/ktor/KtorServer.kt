@@ -4,7 +4,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
-import io.ktor.auth.jwt.jwt
+import io.ktor.auth.basic
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.jackson.jackson
@@ -21,8 +21,10 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
 import net.bjoernpetersen.deskbot.ktor.location.PlayerAccess
+import net.bjoernpetersen.deskbot.ktor.location.UserAccess
 import net.bjoernpetersen.deskbot.ktor.location.Version
 import net.bjoernpetersen.deskbot.ktor.location.player
+import net.bjoernpetersen.deskbot.ktor.location.user
 import net.bjoernpetersen.musicbot.ServerConstraints
 import net.bjoernpetersen.musicbot.api.auth.UserManager
 import net.bjoernpetersen.musicbot.api.image.ImageServerConstraints
@@ -38,12 +40,16 @@ import javax.inject.Singleton
 class KtorServer @Inject private constructor(
     private val userManager: UserManager,
     private val playerAccess: PlayerAccess,
+    private val userAccess: UserAccess,
     private val imageCache: ImageCache
 ) {
     private val logger = KotlinLogging.logger {}
     private val server: ApplicationEngine = embeddedServer(CIO, port = ServerConstraints.port) {
         install(StatusPages) {
             expectAuth()
+            exception<StatusException> {
+                call.respond(it.code, it.message ?: "")
+            }
             // TODO handle status exceptions
         }
         // TODO maybe install(DataConversion)
@@ -54,11 +60,16 @@ class KtorServer @Inject private constructor(
         }
 
         install(Authentication) {
-            jwt {
-
-                validate { it }
+            register(BearerAuthentication(userManager))
+            basic("Basic") {
+                realm = AUTH_REALM
+                validate {
+                    val user = userManager.getUser(it.name)
+                    if (user.hasPassword(it.password)) {
+                        UserPrincipal(user)
+                    } else null
+                }
             }
-            // TODO basic
         }
 
         install(Locations)
@@ -68,17 +79,18 @@ class KtorServer @Inject private constructor(
                 call.respond(Version.versionInfo)
             }
             route("/player") { player(playerAccess) }
+            user(userAccess)
 
             get("${ImageServerConstraints.LOCAL_PATH}/{providerId}/{songId}") {
                 val providerId = call.parameters["providerId"]!!.decode()
                 val songId = call.parameters["songId"]!!.decode()
                 val image = imageCache.getLocal(providerId, songId)
-                respondImage(image)
+                call.respondImage(image)
             }
             get("${ImageServerConstraints.REMOTE_PATH}/{url}") {
                 val url = call.parameters["url"]!!.decode()
                 val image = imageCache.getRemote(url)
-                respondImage(image)
+                call.respondImage(image)
             }
         }
     }
