@@ -78,7 +78,7 @@ class KtorServer @Inject private constructor(
             get<Version> {
                 call.respond(Version.versionInfo)
             }
-            route("/player") { player(playerAccess) }
+            player(playerAccess)
             user(userAccess)
 
             get("${ImageServerConstraints.LOCAL_PATH}/{providerId}/{songId}") {

@@ -9,6 +9,7 @@ import io.ktor.locations.put
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.routing.route
 import mu.KotlinLogging
 import net.bjoernpetersen.deskbot.ktor.require
 import net.bjoernpetersen.deskbot.rest.model.PlayerState
@@ -64,27 +65,29 @@ class PlayerAccess @Inject private constructor(
 fun Route.player(playerAccess: PlayerAccess) {
     playerAccess.apply {
         authenticate {
-            get<PlayerStateRequest> {
-                call.respond(getPlayerState())
-            }
-
-            put<PlayerStateRequest> {
-                val change: PlayerStateChange = call.receive()
-                when (change.action) {
-                    PlayerStateAction.PLAY -> {
-                        require(Permission.PAUSE)
-                        resume()
-                    }
-                    PlayerStateAction.PAUSE -> {
-                        require(Permission.PAUSE)
-                        pause()
-                    }
-                    PlayerStateAction.SKIP -> {
-                        require(Permission.SKIP)
-                        skip()
-                    }
+            route("/player") {
+                get<PlayerStateRequest> {
+                    call.respond(getPlayerState())
                 }
-                call.respond(getPlayerState())
+
+                put<PlayerStateRequest> {
+                    val change: PlayerStateChange = call.receive()
+                    when (change.action) {
+                        PlayerStateAction.PLAY -> {
+                            require(Permission.PAUSE)
+                            resume()
+                        }
+                        PlayerStateAction.PAUSE -> {
+                            require(Permission.PAUSE)
+                            pause()
+                        }
+                        PlayerStateAction.SKIP -> {
+                            require(Permission.SKIP)
+                            skip()
+                        }
+                    }
+                    call.respond(getPlayerState())
+                }
             }
         }
     }
