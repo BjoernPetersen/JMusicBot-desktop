@@ -75,6 +75,7 @@ class KtorServer @Inject private constructor(
             get<Version> {
                 call.respond(Version.versionInfo)
             }
+
             routePlayer(injector)
             routeUser(injector)
             routeExit()
