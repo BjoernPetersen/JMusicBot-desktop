@@ -26,6 +26,7 @@ import net.bjoernpetersen.deskbot.ktor.location.routePlayer
 import net.bjoernpetersen.deskbot.ktor.location.routeProvider
 import net.bjoernpetersen.deskbot.ktor.location.routeSuggester
 import net.bjoernpetersen.deskbot.ktor.location.routeUser
+import net.bjoernpetersen.deskbot.ktor.location.routeVolume
 import net.bjoernpetersen.musicbot.ServerConstraints
 import net.bjoernpetersen.musicbot.api.auth.UserManager
 import net.bjoernpetersen.musicbot.api.image.ImageServerConstraints
@@ -82,6 +83,7 @@ class KtorServer @Inject private constructor(
             routeUser(injector)
             routeProvider(injector)
             routeSuggester(injector)
+            routeVolume(injector)
             routeExit()
 
             get("${ImageServerConstraints.LOCAL_PATH}/{providerId}/{songId}") {
