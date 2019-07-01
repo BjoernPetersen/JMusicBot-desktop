@@ -31,7 +31,7 @@ class ProvidersRequest
 data class SearchRequest(
     val providerId: String,
     val query: String,
-    val limit: Int?,
+    val limit: Int? = null,
     val offset: Int = 0
 )
 
@@ -63,7 +63,6 @@ fun Route.routeProvider(injector: Injector) {
                 call.respond(getProviders())
             }
             get<SearchRequest> {
-                logger.warn { "Provider ID: ${it.providerId}" }
                 val songs = getProvider(it.providerId)
                     ?.search(it.query, it.offset)
                     ?: throw NotFoundException()
