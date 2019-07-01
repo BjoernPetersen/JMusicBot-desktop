@@ -1,6 +1,7 @@
 package net.bjoernpetersen.deskbot.ktor.location
 
 import io.ktor.application.call
+import io.ktor.auth.authenticate
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.post
@@ -23,13 +24,15 @@ private class ExitRequest
 
 @KtorExperimentalLocationsAPI
 fun Route.routeExit() {
-    post<ExitRequest> {
-        require(Permission.EXIT)
-        call.respondEmpty()
-        GlobalScope.launch(Dispatchers.Main) {
-            delay(500)
-            logger.info { "Closing due to remote user request" }
-            Platform.exit()
+    authenticate {
+        post<ExitRequest> {
+            require(Permission.EXIT)
+            call.respondEmpty()
+            GlobalScope.launch(Dispatchers.Main) {
+                delay(500)
+                logger.info { "Closing due to remote user request" }
+                Platform.exit()
+            }
         }
     }
 }

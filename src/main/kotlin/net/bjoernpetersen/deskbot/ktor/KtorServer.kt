@@ -23,6 +23,7 @@ import mu.KotlinLogging
 import net.bjoernpetersen.deskbot.ktor.location.Version
 import net.bjoernpetersen.deskbot.ktor.location.routeExit
 import net.bjoernpetersen.deskbot.ktor.location.routePlayer
+import net.bjoernpetersen.deskbot.ktor.location.routeProvider
 import net.bjoernpetersen.deskbot.ktor.location.routeUser
 import net.bjoernpetersen.musicbot.ServerConstraints
 import net.bjoernpetersen.musicbot.api.auth.UserManager
@@ -78,6 +79,7 @@ class KtorServer @Inject private constructor(
 
             routePlayer(injector)
             routeUser(injector)
+            routeProvider(injector)
             routeExit()
 
             get("${ImageServerConstraints.LOCAL_PATH}/{providerId}/{songId}") {
