@@ -1,5 +1,6 @@
 package net.bjoernpetersen.deskbot.ktor.location
 
+import com.google.inject.Injector
 import io.ktor.application.call
 import io.ktor.auth.authenticate
 import io.ktor.locations.KtorExperimentalLocationsAPI
@@ -12,6 +13,7 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import mu.KotlinLogging
+import net.bjoernpetersen.deskbot.impl.getValue
 import net.bjoernpetersen.deskbot.ktor.ConflictException
 import net.bjoernpetersen.deskbot.ktor.respondEmpty
 import net.bjoernpetersen.deskbot.ktor.user
@@ -61,7 +63,8 @@ class UserAccess @Inject private constructor(
 }
 
 @KtorExperimentalLocationsAPI
-fun Route.user(userAccess: UserAccess) {
+fun Route.user(injector: Injector) {
+    val userAccess: UserAccess by injector
     userAccess.apply {
         post<UserRequest> {
             val credentials: RegisterCredentials = call.receive()

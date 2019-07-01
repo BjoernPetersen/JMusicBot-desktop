@@ -1,6 +1,7 @@
 package net.bjoernpetersen.deskbot.ktor
 
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.google.inject.Injector
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
@@ -13,15 +14,12 @@ import io.ktor.locations.Locations
 import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.get
-import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
-import net.bjoernpetersen.deskbot.ktor.location.PlayerAccess
-import net.bjoernpetersen.deskbot.ktor.location.UserAccess
 import net.bjoernpetersen.deskbot.ktor.location.Version
 import net.bjoernpetersen.deskbot.ktor.location.player
 import net.bjoernpetersen.deskbot.ktor.location.user
@@ -39,9 +37,8 @@ import javax.inject.Singleton
 @KtorExperimentalLocationsAPI
 class KtorServer @Inject private constructor(
     private val userManager: UserManager,
-    private val playerAccess: PlayerAccess,
-    private val userAccess: UserAccess,
-    private val imageCache: ImageCache
+    private val imageCache: ImageCache,
+    private val injector: Injector
 ) {
     private val logger = KotlinLogging.logger {}
     private val server: ApplicationEngine = embeddedServer(CIO, port = ServerConstraints.port) {
@@ -50,7 +47,6 @@ class KtorServer @Inject private constructor(
             exception<StatusException> {
                 call.respond(it.code, it.message ?: "")
             }
-            // TODO handle status exceptions
         }
         // TODO maybe install(DataConversion)
         install(ContentNegotiation) {
@@ -78,8 +74,8 @@ class KtorServer @Inject private constructor(
             get<Version> {
                 call.respond(Version.versionInfo)
             }
-            player(playerAccess)
-            user(userAccess)
+            player(injector)
+            user(injector)
 
             get("${ImageServerConstraints.LOCAL_PATH}/{providerId}/{songId}") {
                 val providerId = call.parameters["providerId"]!!.decode()
