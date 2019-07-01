@@ -9,3 +9,6 @@ sealed class StatusException(
 
 class NotFoundException : StatusException(HttpStatusCode.NotFound)
 class ConflictException : StatusException(HttpStatusCode.Conflict)
+
+
+class UnavailableException : StatusException(HttpStatusCode.ServiceUnavailable)
