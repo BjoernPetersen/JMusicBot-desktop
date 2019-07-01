@@ -63,7 +63,7 @@ private class UserAccess @Inject private constructor(
 }
 
 @KtorExperimentalLocationsAPI
-fun Route.user(injector: Injector) {
+fun Route.routeUser(injector: Injector) {
     val userAccess: UserAccess by injector
     userAccess.apply {
         post<UserRequest> {

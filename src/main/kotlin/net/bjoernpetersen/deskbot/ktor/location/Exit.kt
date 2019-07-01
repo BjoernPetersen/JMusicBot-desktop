@@ -22,7 +22,7 @@ private val logger = KotlinLogging.logger {}
 private class ExitRequest
 
 @KtorExperimentalLocationsAPI
-fun Route.exit() {
+fun Route.routeExit() {
     post<ExitRequest> {
         require(Permission.EXIT)
         call.respondEmpty()

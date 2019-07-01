@@ -63,7 +63,7 @@ private class PlayerAccess @Inject private constructor(
 }
 
 @KtorExperimentalLocationsAPI
-fun Route.player(injector: Injector) {
+fun Route.routePlayer(injector: Injector) {
     val playerAccess: PlayerAccess by injector
     playerAccess.apply {
         authenticate {

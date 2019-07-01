@@ -21,9 +21,9 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
 import net.bjoernpetersen.deskbot.ktor.location.Version
-import net.bjoernpetersen.deskbot.ktor.location.exit
-import net.bjoernpetersen.deskbot.ktor.location.player
-import net.bjoernpetersen.deskbot.ktor.location.user
+import net.bjoernpetersen.deskbot.ktor.location.routeExit
+import net.bjoernpetersen.deskbot.ktor.location.routePlayer
+import net.bjoernpetersen.deskbot.ktor.location.routeUser
 import net.bjoernpetersen.musicbot.ServerConstraints
 import net.bjoernpetersen.musicbot.api.auth.UserManager
 import net.bjoernpetersen.musicbot.api.image.ImageServerConstraints
@@ -75,9 +75,9 @@ class KtorServer @Inject private constructor(
             get<Version> {
                 call.respond(Version.versionInfo)
             }
-            player(injector)
-            user(injector)
-            exit()
+            routePlayer(injector)
+            routeUser(injector)
+            routeExit()
 
             get("${ImageServerConstraints.LOCAL_PATH}/{providerId}/{songId}") {
                 val providerId = call.parameters["providerId"]!!.decode()
