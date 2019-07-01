@@ -9,7 +9,6 @@ import io.ktor.locations.put
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
-import io.ktor.routing.route
 import mu.KotlinLogging
 import net.bjoernpetersen.deskbot.ktor.require
 import net.bjoernpetersen.deskbot.rest.model.PlayerState
@@ -24,7 +23,7 @@ import javax.inject.Inject
 private val logger = KotlinLogging.logger {}
 
 @KtorExperimentalLocationsAPI
-@Location("")
+@Location("/player")
 class PlayerStateRequest
 
 class PlayerAccess @Inject private constructor(
@@ -65,29 +64,27 @@ class PlayerAccess @Inject private constructor(
 fun Route.player(playerAccess: PlayerAccess) {
     playerAccess.apply {
         authenticate {
-            route("/player") {
-                get<PlayerStateRequest> {
-                    call.respond(getPlayerState())
-                }
+            get<PlayerStateRequest> {
+                call.respond(getPlayerState())
+            }
 
-                put<PlayerStateRequest> {
-                    val change: PlayerStateChange = call.receive()
-                    when (change.action) {
-                        PlayerStateAction.PLAY -> {
-                            require(Permission.PAUSE)
-                            resume()
-                        }
-                        PlayerStateAction.PAUSE -> {
-                            require(Permission.PAUSE)
-                            pause()
-                        }
-                        PlayerStateAction.SKIP -> {
-                            require(Permission.SKIP)
-                            skip()
-                        }
+            put<PlayerStateRequest> {
+                val change: PlayerStateChange = call.receive()
+                when (change.action) {
+                    PlayerStateAction.PLAY -> {
+                        require(Permission.PAUSE)
+                        resume()
                     }
-                    call.respond(getPlayerState())
+                    PlayerStateAction.PAUSE -> {
+                        require(Permission.PAUSE)
+                        pause()
+                    }
+                    PlayerStateAction.SKIP -> {
+                        require(Permission.SKIP)
+                        skip()
+                    }
                 }
+                call.respond(getPlayerState())
             }
         }
     }
