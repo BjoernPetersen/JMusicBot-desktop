@@ -21,11 +21,11 @@ private val logger = KotlinLogging.logger {}
 
 @KtorExperimentalLocationsAPI
 @Location("/volume")
-private class GetVolumeRequest
+class GetVolumeRequest
 
 @KtorExperimentalLocationsAPI
 @Location("/volume")
-private data class SetVolumeRequest(val value: Int)
+data class SetVolumeRequest(val value: Int)
 
 private class VolumeAccess @Inject private constructor(
     private val volumeManager: VolumeManager

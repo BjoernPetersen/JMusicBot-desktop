@@ -2,6 +2,7 @@ package net.bjoernpetersen.deskbot.ktor.location
 
 import com.google.inject.Injector
 import io.ktor.application.call
+import io.ktor.auth.authenticate
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.delete
@@ -23,7 +24,6 @@ import net.bjoernpetersen.musicbot.api.auth.User
 import net.bjoernpetersen.musicbot.api.player.Song
 import net.bjoernpetersen.musicbot.spi.player.PlayerHistory
 import net.bjoernpetersen.musicbot.spi.player.SongQueue
-import net.bjoernpetersen.musicbot.spi.plugin.NoSuchSongException
 import net.bjoernpetersen.musicbot.spi.plugin.Plugin
 import net.bjoernpetersen.musicbot.spi.plugin.PluginLookup
 import net.bjoernpetersen.musicbot.spi.plugin.Provider
@@ -33,22 +33,22 @@ private val logger = KotlinLogging.logger {}
 
 @KtorExperimentalLocationsAPI
 @Location("/player/queue")
-private class GetQueueRequest
+class GetQueueRequest
 
 @KtorExperimentalLocationsAPI
 @Location("/player/queue/history")
-private class GetRecentQueueRequest
+class GetRecentQueueRequest
 
 @KtorExperimentalLocationsAPI
 @Location("/player/queue")
-private class ModifyQueueRequest(
+class ModifyQueueRequest(
     val songId: String,
     val providerId: String
 )
 
 @KtorExperimentalLocationsAPI
 @Location("/player/queue/order")
-private class MoveRequest(
+class MoveRequest(
     val index: Int,
     val songId: String,
     val providerId: String
@@ -69,14 +69,6 @@ private class QueueAccess @Inject private constructor(
 
     fun getProvider(providerId: String): Provider? {
         return pluginLookup.lookup<Plugin>(providerId) as? Provider
-    }
-
-    suspend fun Provider.getSong(songId: String): Song? {
-        return try {
-            lookup(songId)
-        } catch (e: NoSuchSongException) {
-            return null
-        }
     }
 
     fun User.enqueue(song: Song) {
@@ -101,35 +93,37 @@ private class QueueAccess @Inject private constructor(
 fun Route.routeQueue(injector: Injector) {
     val access: QueueAccess by injector
     access.apply {
-        get<GetQueueRequest> {
-            call.respond(getQueue())
-        }
-        get<GetRecentQueueRequest> {
-            call.respond(getRecentQueue())
-        }
-        put<ModifyQueueRequest> {
-            require(Permission.ENQUEUE)
-            val song = getProvider(it.providerId)
-                ?.getSong(it.songId)
-                ?: throw NotFoundException()
-            call.user.enqueue(song)
-            call.respond(getQueue())
-        }
-        delete<ModifyQueueRequest> {
-            val entry = getEntry(it.providerId, it.songId)
-            if (entry != null) {
-                if (entry.user != call.user) require(Permission.SKIP)
-                dequeue(entry.song)
+        authenticate {
+            get<GetQueueRequest> {
+                call.respond(getQueue())
             }
-            call.respond(getQueue())
-        }
-        put<MoveRequest> {
-            require(Permission.MOVE)
-            val song = getProvider(it.providerId)
-                ?.getSong(it.songId)
-                ?: throw NotFoundException()
-            moveSong(song, it.index)
-            call.respond(getQueue())
+            get<GetRecentQueueRequest> {
+                call.respond(getRecentQueue())
+            }
+            put<ModifyQueueRequest> {
+                require(Permission.ENQUEUE)
+                val song = getProvider(it.providerId)
+                    ?.lookup(it.songId)
+                    ?: throw NotFoundException()
+                call.user.enqueue(song)
+                call.respond(getQueue())
+            }
+            delete<ModifyQueueRequest> {
+                val entry = getEntry(it.providerId, it.songId)
+                if (entry != null) {
+                    if (entry.user != call.user) require(Permission.SKIP)
+                    dequeue(entry.song)
+                }
+                call.respond(getQueue())
+            }
+            put<MoveRequest> {
+                require(Permission.MOVE)
+                val song = getProvider(it.providerId)
+                    ?.lookup(it.songId)
+                    ?: throw NotFoundException()
+                moveSong(song, it.index)
+                call.respond(getQueue())
+            }
         }
     }
 }

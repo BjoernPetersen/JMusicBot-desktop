@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.zafarkhaja.semver.ParseException
+import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import net.bjoernpetersen.deskbot.rest.handler.VersionHandler
 import net.bjoernpetersen.deskbot.rest.model.ImplementationInfo
@@ -16,6 +17,7 @@ import java.util.Properties
 private const val PROJECT_PAGE = "https://github.com/BjoernPetersen/MusicBot-desktop"
 private const val PROJECT_NAME = "DeskBot"
 
+@KtorExperimentalLocationsAPI
 @Location("/version")
 class Version {
     companion object {

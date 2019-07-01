@@ -17,10 +17,8 @@ import net.bjoernpetersen.deskbot.ktor.require
 import net.bjoernpetersen.deskbot.ktor.respondEmpty
 import net.bjoernpetersen.deskbot.rest.model.NamedPlugin
 import net.bjoernpetersen.musicbot.api.auth.Permission
-import net.bjoernpetersen.musicbot.api.player.Song
 import net.bjoernpetersen.musicbot.api.plugin.management.PluginFinder
 import net.bjoernpetersen.musicbot.spi.plugin.BrokenSuggesterException
-import net.bjoernpetersen.musicbot.spi.plugin.NoSuchSongException
 import net.bjoernpetersen.musicbot.spi.plugin.Plugin
 import net.bjoernpetersen.musicbot.spi.plugin.PluginLookup
 import net.bjoernpetersen.musicbot.spi.plugin.Provider
@@ -34,18 +32,18 @@ private val logger = KotlinLogging.logger {}
 
 @KtorExperimentalLocationsAPI
 @Location("/suggester")
-private class SuggestersRequest
+class SuggestersRequest
 
 @KtorExperimentalLocationsAPI
 @Location("/suggester/{suggesterId}")
-private data class SuggestionsRequest(
+data class SuggestionsRequest(
     val suggesterId: String,
     val max: Int = 32
 )
 
 @KtorExperimentalLocationsAPI
-@Location("/provider/{suggesterId}")
-private data class DislikeRequest(
+@Location("/suggester/{suggesterId}")
+data class DislikeRequest(
     val suggesterId: String,
     val providerId: String,
     val songId: String
@@ -65,14 +63,6 @@ private class SuggesterAccess @Inject private constructor(
         return pluginLookup.lookup<Plugin>(providerId) as? Provider
     }
 
-    suspend fun Provider.getSong(songId: String): Song? {
-        return try {
-            lookup(songId)
-        } catch (e: NoSuchSongException) {
-            return null
-        }
-    }
-
     fun getSuggester(suggesterId: String): Suggester? {
         return pluginLookup.lookup<Plugin>(suggesterId) as? Suggester
     }
@@ -88,19 +78,21 @@ fun Route.routeSuggester(injector: Injector) {
             }
             get<SuggestionsRequest> {
                 val suggester = getSuggester(it.suggesterId) ?: throw NotFoundException()
+                val max = max(1, min(64, it.max))
                 val suggestions = try {
-                    suggester.getNextSuggestions(max(1, min(64, it.max)))
+                    suggester.getNextSuggestions(max)
                 } catch (e: BrokenSuggesterException) {
                     throw UnavailableException()
                 }
 
-                call.respond(suggestions)
+                val limited = suggestions.subList(0, min(suggestions.size, max))
+                call.respond(limited)
             }
             delete<DislikeRequest> {
                 require(Permission.DISLIKE)
                 val suggester = getSuggester(it.suggesterId) ?: throw NotFoundException()
                 val song = getProvider(it.providerId)
-                    ?.getSong(it.songId)
+                    ?.lookup(it.songId)
                     ?: throw NotFoundException()
 
                 suggester.dislike(song)

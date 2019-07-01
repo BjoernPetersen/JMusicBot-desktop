@@ -20,7 +20,7 @@ private val logger = KotlinLogging.logger {}
 
 @KtorExperimentalLocationsAPI
 @Location("/exit")
-private class ExitRequest
+class ExitRequest
 
 @KtorExperimentalLocationsAPI
 fun Route.routeExit() {

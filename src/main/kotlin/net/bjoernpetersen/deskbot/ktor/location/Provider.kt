@@ -12,9 +12,7 @@ import mu.KotlinLogging
 import net.bjoernpetersen.deskbot.impl.getValue
 import net.bjoernpetersen.deskbot.ktor.NotFoundException
 import net.bjoernpetersen.deskbot.rest.model.NamedPlugin
-import net.bjoernpetersen.musicbot.api.player.Song
 import net.bjoernpetersen.musicbot.api.plugin.management.PluginFinder
-import net.bjoernpetersen.musicbot.spi.plugin.NoSuchSongException
 import net.bjoernpetersen.musicbot.spi.plugin.Plugin
 import net.bjoernpetersen.musicbot.spi.plugin.PluginLookup
 import net.bjoernpetersen.musicbot.spi.plugin.Provider
@@ -26,11 +24,11 @@ private val logger = KotlinLogging.logger {}
 
 @KtorExperimentalLocationsAPI
 @Location("/provider")
-private class ProvidersRequest
+class ProvidersRequest
 
 @KtorExperimentalLocationsAPI
 @Location("/provider/{providerId}")
-private data class SearchRequest(
+data class SearchRequest(
     val providerId: String,
     val query: String,
     val limit: Int?,
@@ -39,8 +37,7 @@ private data class SearchRequest(
 
 @KtorExperimentalLocationsAPI
 @Location("/provider/{providerId}/{songId}")
-private data class SongRequest(val providerId: String, val songId: String)
-
+data class SongRequest(val providerId: String, val songId: String)
 
 private class ProviderAccess @Inject private constructor(
     private val pluginFinder: PluginFinder,
@@ -55,14 +52,6 @@ private class ProviderAccess @Inject private constructor(
     fun getProvider(providerId: String): Provider? {
         return pluginLookup.lookup<Plugin>(providerId) as? Provider
     }
-
-    suspend fun Provider.getSong(songId: String): Song? {
-        return try {
-            lookup(songId)
-        } catch (e: NoSuchSongException) {
-            return null
-        }
-    }
 }
 
 @KtorExperimentalLocationsAPI
@@ -74,6 +63,7 @@ fun Route.routeProvider(injector: Injector) {
                 call.respond(getProviders())
             }
             get<SearchRequest> {
+                logger.warn { "Provider ID: ${it.providerId}" }
                 val songs = getProvider(it.providerId)
                     ?.search(it.query, it.offset)
                     ?: throw NotFoundException()
@@ -84,7 +74,7 @@ fun Route.routeProvider(injector: Injector) {
             }
             get<SongRequest> {
                 val song = getProvider(it.providerId)
-                    ?.getSong(it.songId)
+                    ?.lookup(it.songId)
                     ?: throw NotFoundException()
                 call.respond(song)
             }

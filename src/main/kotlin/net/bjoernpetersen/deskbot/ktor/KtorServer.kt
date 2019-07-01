@@ -8,6 +8,7 @@ import io.ktor.auth.Authentication
 import io.ktor.auth.basic
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
+import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
@@ -32,6 +33,7 @@ import net.bjoernpetersen.musicbot.ServerConstraints
 import net.bjoernpetersen.musicbot.api.auth.UserManager
 import net.bjoernpetersen.musicbot.api.image.ImageServerConstraints
 import net.bjoernpetersen.musicbot.spi.image.ImageCache
+import net.bjoernpetersen.musicbot.spi.plugin.NoSuchSongException
 import java.util.Base64
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -51,6 +53,13 @@ class KtorServer @Inject private constructor(
             expectAuth()
             exception<StatusException> {
                 call.respond(it.code, it.message ?: "")
+            }
+            exception<IllegalArgumentException> {
+                logger.debug(it) { "IllegalArgumentException from pipeline" }
+                call.respond(HttpStatusCode.BadRequest, it.message ?: "")
+            }
+            exception<NoSuchSongException> {
+                call.respond(HttpStatusCode.NotFound, it.message ?: "Song not found.")
             }
         }
         // TODO maybe install(DataConversion)
