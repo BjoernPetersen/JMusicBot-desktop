@@ -28,13 +28,13 @@ private val logger = KotlinLogging.logger {}
 
 @KtorExperimentalLocationsAPI
 @Location("/user")
-class UserRequest
+private class UserRequest
 
 @KtorExperimentalLocationsAPI
 @Location("/token")
-class LoginRequest
+private class LoginRequest
 
-class UserAccess @Inject private constructor(
+private class UserAccess @Inject private constructor(
     private val userManager: UserManager
 ) {
     fun registerUser(credentials: RegisterCredentials): User {

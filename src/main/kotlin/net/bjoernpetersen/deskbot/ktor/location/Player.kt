@@ -26,9 +26,9 @@ private val logger = KotlinLogging.logger {}
 
 @KtorExperimentalLocationsAPI
 @Location("/player")
-class PlayerStateRequest
+private class PlayerStateRequest
 
-class PlayerAccess @Inject private constructor(
+private class PlayerAccess @Inject private constructor(
     val player: Player,
     val progressTracker: ProgressTracker
 ) {
