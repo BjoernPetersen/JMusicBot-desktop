@@ -152,11 +152,6 @@ dependencies {
         name = "ktor-jackson",
         version = Lib.KTOR
     )
-    implementation(
-        group = "io.ktor",
-        name = "ktor-auth-basic",
-        version = Lib.KTOR
-    )
 
     // JavaFX
     implementation("org.controlsfx:controlsfx:${Lib.CONTROLS_FX}")
