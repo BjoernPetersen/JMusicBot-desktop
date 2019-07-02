@@ -64,4 +64,3 @@ class Version {
         private data class MockInfo(val version: String)
     }
 }
-
