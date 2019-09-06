@@ -49,7 +49,7 @@ class Version {
         }
 
         private fun loadApiVersion(): String {
-            // TODO can't do that when the spec is gone
+            // FIXME can't do that when the spec is gone
             val openApi: MockOpenApi = ObjectMapper(YAMLFactory())
                 .registerModule(KotlinModule())
                 .readValue(this::class.java.getResource("/openapi/MusicBot.yaml"))
