@@ -1,4 +1,4 @@
-package net.bjoernpetersen.deskbot.ktor.location
+package net.bjoernpetersen.deskbot.rest.location
 
 import io.ktor.application.call
 import io.ktor.auth.authenticate
@@ -12,8 +12,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import net.bjoernpetersen.deskbot.ktor.require
-import net.bjoernpetersen.deskbot.ktor.respondEmpty
+import net.bjoernpetersen.deskbot.rest.require
+import net.bjoernpetersen.deskbot.rest.respondEmpty
 import net.bjoernpetersen.musicbot.api.auth.Permission
 
 private val logger = KotlinLogging.logger {}

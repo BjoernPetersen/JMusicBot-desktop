@@ -1,4 +1,4 @@
-package net.bjoernpetersen.deskbot.ktor.location
+package net.bjoernpetersen.deskbot.rest.location
 
 import com.google.inject.Injector
 import io.ktor.application.call
@@ -11,8 +11,8 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import mu.KotlinLogging
 import net.bjoernpetersen.deskbot.impl.getValue
-import net.bjoernpetersen.deskbot.ktor.BadRequestException
-import net.bjoernpetersen.deskbot.ktor.require
+import net.bjoernpetersen.deskbot.rest.BadRequestException
+import net.bjoernpetersen.deskbot.rest.require
 import net.bjoernpetersen.musicbot.api.auth.Permission
 import net.bjoernpetersen.musicbot.api.plugin.volume.Volume
 import net.bjoernpetersen.musicbot.api.plugin.volume.VolumeManager

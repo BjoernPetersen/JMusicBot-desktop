@@ -1,4 +1,4 @@
-package net.bjoernpetersen.deskbot.ktor
+package net.bjoernpetersen.deskbot.rest
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -23,14 +23,14 @@ import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
-import net.bjoernpetersen.deskbot.ktor.location.Version
-import net.bjoernpetersen.deskbot.ktor.location.routeExit
-import net.bjoernpetersen.deskbot.ktor.location.routePlayer
-import net.bjoernpetersen.deskbot.ktor.location.routeProvider
-import net.bjoernpetersen.deskbot.ktor.location.routeQueue
-import net.bjoernpetersen.deskbot.ktor.location.routeSuggester
-import net.bjoernpetersen.deskbot.ktor.location.routeUser
-import net.bjoernpetersen.deskbot.ktor.location.routeVolume
+import net.bjoernpetersen.deskbot.rest.location.Version
+import net.bjoernpetersen.deskbot.rest.location.routeExit
+import net.bjoernpetersen.deskbot.rest.location.routePlayer
+import net.bjoernpetersen.deskbot.rest.location.routeProvider
+import net.bjoernpetersen.deskbot.rest.location.routeQueue
+import net.bjoernpetersen.deskbot.rest.location.routeSuggester
+import net.bjoernpetersen.deskbot.rest.location.routeUser
+import net.bjoernpetersen.deskbot.rest.location.routeVolume
 import net.bjoernpetersen.deskbot.rest.model.AuthExpectation
 import net.bjoernpetersen.deskbot.rest.model.basicExpect
 import net.bjoernpetersen.deskbot.rest.model.type
@@ -87,7 +87,9 @@ class KtorServer @Inject private constructor(
                         val user = userManager.getUser(it.name)
                         if (user.hasPassword(it.password)) {
                             UserPrincipal(user)
-                        } else throw AuthExpectationException(basicExpect(user.type))
+                        } else throw AuthExpectationException(
+                            basicExpect(user.type)
+                        )
                     } catch (e: UserNotFoundException) {
                         throw NotFoundException()
                     }

@@ -1,4 +1,4 @@
-package net.bjoernpetersen.deskbot.rest.handler
+package net.bjoernpetersen.deskbot.rest.location
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -6,40 +6,23 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.zafarkhaja.semver.ParseException
-import io.vertx.ext.web.RoutingContext
-import io.vertx.ext.web.api.contract.openapi3.OpenAPI3RouterFactory
-import net.bjoernpetersen.deskbot.rest.HandlerController
-import net.bjoernpetersen.deskbot.rest.async
-import net.bjoernpetersen.deskbot.rest.end
+import io.ktor.locations.KtorExperimentalLocationsAPI
+import io.ktor.locations.Location
 import net.bjoernpetersen.deskbot.rest.model.ImplementationInfo
 import net.bjoernpetersen.deskbot.rest.model.VersionInfo
 import java.io.IOException
 import java.util.Properties
-import javax.inject.Inject
 
 private const val PROJECT_PAGE = "https://github.com/BjoernPetersen/MusicBot-desktop"
 private const val PROJECT_NAME = "DeskBot"
 
-class VersionHandler @Inject private constructor() : HandlerController {
+@KtorExperimentalLocationsAPI
+@Location("/version")
+class Version {
+    companion object {
+        val versionInfo: VersionInfo by lazy { loadInfo() }
 
-    private val versionInfo: VersionInfo by lazy { loadInfo() }
-
-    override suspend fun register(routerFactory: OpenAPI3RouterFactory) {
-        routerFactory.addHandlerByOperationId("getVersion", ::getVersion)
-    }
-
-    private fun getVersion(ctx: RoutingContext) {
-        ctx.async {
-            versionInfo
-        } success {
-            ctx.response().end(versionInfo)
-        } failure {
-            ctx.fail(it)
-        }
-    }
-
-    private companion object {
-        fun loadInfo(): VersionInfo {
+        private fun loadInfo(): VersionInfo {
             val implVersion = loadImplementationVersion()
             val apiVersion = loadApiVersion()
             return VersionInfo(
@@ -54,7 +37,7 @@ class VersionHandler @Inject private constructor() : HandlerController {
 
         private fun loadImplementationVersion() = try {
             val properties = Properties()
-            VersionHandler::class.java
+            Version::class.java
                 .getResourceAsStream("/net/bjoernpetersen/deskbot/version.properties")
                 .use { versionStream -> properties.load(versionStream) }
             properties.getProperty("version") ?: throw IllegalStateException("Version is missing")
@@ -65,6 +48,7 @@ class VersionHandler @Inject private constructor() : HandlerController {
         }
 
         private fun loadApiVersion(): String {
+            // FIXME can't do that when the spec is gone
             val openApi: MockOpenApi = ObjectMapper(YAMLFactory())
                 .registerModule(KotlinModule())
                 .readValue(this::class.java.getResource("/openapi/MusicBot.yaml"))

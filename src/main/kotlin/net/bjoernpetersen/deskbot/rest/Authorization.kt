@@ -1,4 +1,4 @@
-package net.bjoernpetersen.deskbot.ktor
+package net.bjoernpetersen.deskbot.rest
 
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -32,6 +32,10 @@ private fun expected(permission: Permission) =
 fun PipelineContext<Unit, ApplicationCall>.require(permission: Permission) {
     val user = call.user
     if (permission !in user.permissions) {
-        throw AuthorizationException(expected(permission))
+        throw AuthorizationException(
+            expected(
+                permission
+            )
+        )
     }
 }

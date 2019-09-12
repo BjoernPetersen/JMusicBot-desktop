@@ -1,4 +1,4 @@
-package net.bjoernpetersen.deskbot.ktor.location
+package net.bjoernpetersen.deskbot.rest.location
 
 import com.google.inject.Injector
 import io.ktor.application.call
@@ -12,7 +12,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import mu.KotlinLogging
 import net.bjoernpetersen.deskbot.impl.getValue
-import net.bjoernpetersen.deskbot.ktor.require
+import net.bjoernpetersen.deskbot.rest.require
 import net.bjoernpetersen.deskbot.rest.model.PlayerState
 import net.bjoernpetersen.deskbot.rest.model.PlayerStateAction
 import net.bjoernpetersen.deskbot.rest.model.PlayerStateChange

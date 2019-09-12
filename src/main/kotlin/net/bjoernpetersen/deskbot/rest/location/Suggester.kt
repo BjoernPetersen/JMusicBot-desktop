@@ -1,4 +1,4 @@
-package net.bjoernpetersen.deskbot.ktor.location
+package net.bjoernpetersen.deskbot.rest.location
 
 import com.google.inject.Injector
 import io.ktor.application.call
@@ -11,10 +11,10 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import mu.KotlinLogging
 import net.bjoernpetersen.deskbot.impl.getValue
-import net.bjoernpetersen.deskbot.ktor.NotFoundException
-import net.bjoernpetersen.deskbot.ktor.UnavailableException
-import net.bjoernpetersen.deskbot.ktor.require
-import net.bjoernpetersen.deskbot.ktor.respondEmpty
+import net.bjoernpetersen.deskbot.rest.NotFoundException
+import net.bjoernpetersen.deskbot.rest.UnavailableException
+import net.bjoernpetersen.deskbot.rest.require
+import net.bjoernpetersen.deskbot.rest.respondEmpty
 import net.bjoernpetersen.deskbot.rest.model.NamedPlugin
 import net.bjoernpetersen.musicbot.api.auth.Permission
 import net.bjoernpetersen.musicbot.api.plugin.management.PluginFinder

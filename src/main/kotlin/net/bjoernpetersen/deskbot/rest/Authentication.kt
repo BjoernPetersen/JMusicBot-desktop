@@ -1,4 +1,4 @@
-package net.bjoernpetersen.deskbot.ktor
+package net.bjoernpetersen.deskbot.rest
 
 import io.ktor.application.call
 import io.ktor.auth.AuthenticationContext
@@ -76,7 +76,12 @@ private fun AuthenticationContext.bearerChallenge(
     realm: String,
     scheme: String
 ) = challenge(BearerKey, cause) {
-    val copied = UnauthorizedResponse(bearerAuthChallenge(realm, scheme))
+    val copied = UnauthorizedResponse(
+        bearerAuthChallenge(
+            realm,
+            scheme
+        )
+    )
     // We want to send an AuthExpectation body so we can't send the above response directly
     call.response.headers.let { headers ->
         copied.headers.forEach { key, values ->

@@ -1,4 +1,4 @@
-package net.bjoernpetersen.deskbot.ktor
+package net.bjoernpetersen.deskbot.rest
 
 import io.ktor.application.ApplicationCall
 import io.ktor.http.ContentType
