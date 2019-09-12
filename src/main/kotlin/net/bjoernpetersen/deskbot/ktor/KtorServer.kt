@@ -31,8 +31,12 @@ import net.bjoernpetersen.deskbot.ktor.location.routeQueue
 import net.bjoernpetersen.deskbot.ktor.location.routeSuggester
 import net.bjoernpetersen.deskbot.ktor.location.routeUser
 import net.bjoernpetersen.deskbot.ktor.location.routeVolume
+import net.bjoernpetersen.deskbot.rest.model.AuthExpectation
+import net.bjoernpetersen.deskbot.rest.model.basicExpect
+import net.bjoernpetersen.deskbot.rest.model.type
 import net.bjoernpetersen.musicbot.ServerConstraints
 import net.bjoernpetersen.musicbot.api.auth.UserManager
+import net.bjoernpetersen.musicbot.api.auth.UserNotFoundException
 import net.bjoernpetersen.musicbot.api.image.ImageServerConstraints
 import net.bjoernpetersen.musicbot.spi.image.ImageCache
 import net.bjoernpetersen.musicbot.spi.plugin.NoSuchSongException
@@ -52,6 +56,9 @@ class KtorServer @Inject private constructor(
     private val server: ApplicationEngine = embeddedServer(CIO, port = ServerConstraints.port) {
         install(StatusPages) {
             expectAuth()
+            exception<AuthExpectationException> {
+                call.respond(HttpStatusCode.Unauthorized, it.authExpectation)
+            }
             exception<StatusException> {
                 call.respond(it.code, it.message ?: "")
             }
@@ -76,10 +83,14 @@ class KtorServer @Inject private constructor(
             basic("Basic") {
                 realm = AUTH_REALM
                 validate {
-                    val user = userManager.getUser(it.name)
-                    if (user.hasPassword(it.password)) {
-                        UserPrincipal(user)
-                    } else null
+                    try {
+                        val user = userManager.getUser(it.name)
+                        if (user.hasPassword(it.password)) {
+                            UserPrincipal(user)
+                        } else throw AuthExpectationException(basicExpect(user.type))
+                    } catch (e: UserNotFoundException) {
+                        throw NotFoundException()
+                    }
                 }
             }
         }
@@ -128,3 +139,5 @@ class KtorServer @Inject private constructor(
         }
     }
 }
+
+private class AuthExpectationException(val authExpectation: AuthExpectation) : Exception()

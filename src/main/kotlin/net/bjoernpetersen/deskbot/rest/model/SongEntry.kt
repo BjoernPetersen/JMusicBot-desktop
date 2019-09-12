@@ -22,6 +22,7 @@ data class QueueEntry(val song: Song, val userName: String)
 typealias CoreQueueEntry = net.bjoernpetersen.musicbot.api.player.QueueEntry
 
 fun CoreQueueEntry.toModel() = QueueEntry(song, user.name)
+// TODO this may be ready to remove
 fun QueueEntry.toCore(userManager: UserManager) =
     CoreQueueEntry(song, userManager.getUser(userName))
 

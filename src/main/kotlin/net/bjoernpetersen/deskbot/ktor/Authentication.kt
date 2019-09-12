@@ -8,10 +8,12 @@ import io.ktor.auth.AuthenticationProvider
 import io.ktor.auth.Principal
 import io.ktor.auth.UnauthorizedResponse
 import io.ktor.auth.parseAuthorizationHeader
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.request.ApplicationRequest
 import io.ktor.response.respond
 import mu.KotlinLogging
+import net.bjoernpetersen.deskbot.rest.model.tokenExpect
 import net.bjoernpetersen.musicbot.api.auth.InvalidTokenException
 import net.bjoernpetersen.musicbot.api.auth.User
 import net.bjoernpetersen.musicbot.api.auth.UserManager
@@ -74,7 +76,15 @@ private fun AuthenticationContext.bearerChallenge(
     realm: String,
     scheme: String
 ) = challenge(BearerKey, cause) {
-    call.respond(UnauthorizedResponse(bearerAuthChallenge(realm, scheme)))
+    val copied = UnauthorizedResponse(bearerAuthChallenge(realm, scheme))
+    // We want to send an AuthExpectation body so we can't send the above response directly
+    call.response.headers.let { headers ->
+        copied.headers.forEach { key, values ->
+            if (!headers.contains(key)) values.forEach { value -> headers.append(key, value) }
+        }
+    }
+    call.response.status(HttpStatusCode.Unauthorized)
+    call.respond(tokenExpect(null))
     it.complete()
 }
 

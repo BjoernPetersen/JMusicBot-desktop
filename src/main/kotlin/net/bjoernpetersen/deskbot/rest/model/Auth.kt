@@ -1,6 +1,8 @@
 package net.bjoernpetersen.deskbot.rest.model
 
+import net.bjoernpetersen.musicbot.api.auth.GuestUser
 import net.bjoernpetersen.musicbot.api.auth.Permission
+import net.bjoernpetersen.musicbot.api.auth.User
 
 enum class AuthType {
     Token, Basic
@@ -9,6 +11,12 @@ enum class AuthType {
 enum class UserType {
     Guest, Full
 }
+
+val User.type: UserType
+    get() = when (this) {
+        is GuestUser -> UserType.Guest
+        else -> UserType.Full
+    }
 
 /**
  * @param format The required authentication format.
@@ -23,7 +31,7 @@ data class AuthExpectation(
     val permissions: List<Permission>? = null
 )
 
-fun tokenExpect(permissions: List<Permission>): AuthExpectation =
+fun tokenExpect(permissions: List<Permission>?): AuthExpectation =
     AuthExpectation(AuthType.Token, permissions = permissions)
 
 fun basicExpect(type: UserType): AuthExpectation =
