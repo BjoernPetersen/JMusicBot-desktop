@@ -127,15 +127,6 @@ dependencies {
         version = Lib.KOTLIN_COROUTINES
     )
 
-    // Vertx
-    implementation(group = "io.vertx", name = "vertx-web-api-contract", version = Lib.VERTX)
-    implementation(group = "io.vertx", name = "vertx-lang-kotlin", version = Lib.VERTX) {
-        exclude(group = "org.jetbrains.kotlin")
-    }
-    implementation(group = "io.vertx", name = "vertx-lang-kotlin-coroutines", version = Lib.VERTX) {
-        exclude(group = "org.jetbrains.kotlin")
-    }
-
     // Ktor
     implementation(
         group = "io.ktor",
