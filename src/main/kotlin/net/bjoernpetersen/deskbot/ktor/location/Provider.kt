@@ -19,6 +19,7 @@ import net.bjoernpetersen.musicbot.spi.plugin.Provider
 import net.bjoernpetersen.musicbot.spi.plugin.id
 import javax.inject.Inject
 import kotlin.math.min
+import kotlin.reflect.KClass
 
 private val logger = KotlinLogging.logger {}
 
@@ -43,9 +44,10 @@ private class ProviderAccess @Inject private constructor(
     private val pluginFinder: PluginFinder,
     private val pluginLookup: PluginLookup
 ) {
-    fun getProviders(): List<NamedPlugin<Plugin>> {
+    @Suppress("UNCHECKED_CAST")
+    fun getProviders(): List<NamedPlugin<*>> {
         return pluginFinder.providers.map {
-            NamedPlugin(it.id, it.subject)
+            NamedPlugin(it.id as KClass<Provider>, it.subject)
         }
     }
 

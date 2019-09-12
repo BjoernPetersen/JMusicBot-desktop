@@ -6,14 +6,12 @@ import io.ktor.auth.principal
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
-import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.pipeline.PipelineContext
 import net.bjoernpetersen.deskbot.rest.model.AuthExpectation
 import net.bjoernpetersen.deskbot.rest.model.AuthType
 import net.bjoernpetersen.musicbot.api.auth.Permission
 import net.bjoernpetersen.musicbot.api.auth.User
 
-@KtorExperimentalAPI
 fun StatusPages.Configuration.expectAuth() {
     exception<AuthorizationException> {
         call.respond(HttpStatusCode.Forbidden, it.authExpectation)

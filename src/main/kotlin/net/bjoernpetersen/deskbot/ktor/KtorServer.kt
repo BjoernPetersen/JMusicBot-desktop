@@ -7,6 +7,7 @@ import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.basic
 import io.ktor.features.ContentNegotiation
+import io.ktor.features.DataConversion
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
@@ -40,8 +41,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-@KtorExperimentalAPI
-@KtorExperimentalLocationsAPI
+@UseExperimental(KtorExperimentalAPI::class, KtorExperimentalLocationsAPI::class)
 class KtorServer @Inject private constructor(
     private val userManager: UserManager,
     private val imageCache: ImageCache,
@@ -62,7 +62,7 @@ class KtorServer @Inject private constructor(
                 call.respond(HttpStatusCode.NotFound, it.message ?: "Song not found.")
             }
         }
-        // TODO maybe install(DataConversion)
+        install(DataConversion)
         install(ContentNegotiation) {
             jackson {
                 registerModule(KotlinModule())

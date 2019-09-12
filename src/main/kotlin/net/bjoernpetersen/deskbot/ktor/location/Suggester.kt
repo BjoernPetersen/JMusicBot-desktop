@@ -27,6 +27,7 @@ import net.bjoernpetersen.musicbot.spi.plugin.id
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.reflect.KClass
 
 private val logger = KotlinLogging.logger {}
 
@@ -53,9 +54,10 @@ private class SuggesterAccess @Inject private constructor(
     private val pluginFinder: PluginFinder,
     private val pluginLookup: PluginLookup
 ) {
-    fun getSuggesters(): List<NamedPlugin<Plugin>> {
+    @Suppress("UNCHECKED_CAST")
+    fun getSuggesters(): List<NamedPlugin<*>> {
         return pluginFinder.suggesters.map {
-            NamedPlugin(it.id, it.subject)
+            NamedPlugin(it.id as KClass<Suggester>, it.subject)
         }
     }
 
