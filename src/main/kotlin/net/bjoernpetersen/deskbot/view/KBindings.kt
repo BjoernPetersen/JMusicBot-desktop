@@ -20,7 +20,7 @@ import javafx.beans.binding.StringBinding
  * @return The generated binding
  */
 fun createBooleanBinding(vararg dependencies: Observable, func: () -> Boolean?): BooleanBinding {
-    return Bindings.createBooleanBinding(func, dependencies)
+    return Bindings.createBooleanBinding(func, *dependencies)
 }
 
 /**
@@ -31,7 +31,7 @@ fun createBooleanBinding(vararg dependencies: Observable, func: () -> Boolean?):
  * @return The generated binding
  */
 fun createDoubleBinding(vararg dependencies: Observable, func: () -> Double?): DoubleBinding {
-    return Bindings.createDoubleBinding(func, dependencies)
+    return Bindings.createDoubleBinding(func, *dependencies)
 }
 
 /**
@@ -42,7 +42,7 @@ fun createDoubleBinding(vararg dependencies: Observable, func: () -> Double?): D
  * @return The generated binding
  */
 fun createFloatBinding(vararg dependencies: Observable, func: () -> Float?): FloatBinding {
-    return Bindings.createFloatBinding(func, dependencies)
+    return Bindings.createFloatBinding(func, *dependencies)
 }
 
 /**
@@ -53,7 +53,7 @@ fun createFloatBinding(vararg dependencies: Observable, func: () -> Float?): Flo
  * @return The generated binding
  */
 fun createIntegerBinding(vararg dependencies: Observable, func: () -> Int?): IntegerBinding {
-    return Bindings.createIntegerBinding(func, dependencies)
+    return Bindings.createIntegerBinding(func, *dependencies)
 }
 
 /**
@@ -64,7 +64,7 @@ fun createIntegerBinding(vararg dependencies: Observable, func: () -> Int?): Int
  * @return The generated binding
  */
 fun createLongBinding(vararg dependencies: Observable, func: () -> Long?): LongBinding {
-    return Bindings.createLongBinding(func, dependencies)
+    return Bindings.createLongBinding(func, *dependencies)
 }
 
 /**
@@ -76,7 +76,7 @@ fun createLongBinding(vararg dependencies: Observable, func: () -> Long?): LongB
  * @return The generated binding
  */
 fun <T> createObjectBinding(vararg dependencies: Observable, func: () -> T?): ObjectBinding<T> {
-    return Bindings.createObjectBinding(func, dependencies)
+    return Bindings.createObjectBinding(func, *dependencies)
 }
 
 /**
@@ -87,5 +87,5 @@ fun <T> createObjectBinding(vararg dependencies: Observable, func: () -> T?): Ob
  * @return The generated binding
  */
 fun createStringBinding(vararg dependencies: Observable, func: () -> String?): StringBinding {
-    return Bindings.createStringBinding(func, dependencies)
+    return Bindings.createStringBinding(func, *dependencies)
 }
