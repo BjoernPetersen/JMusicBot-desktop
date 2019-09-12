@@ -1,7 +1,6 @@
 package net.bjoernpetersen.deskbot.rest
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.inject.Injector
 import io.ktor.application.call
 import io.ktor.application.install
@@ -73,7 +72,6 @@ class KtorServer @Inject private constructor(
         install(DataConversion)
         install(ContentNegotiation) {
             jackson {
-                registerModule(KotlinModule())
                 setSerializationInclusion(JsonInclude.Include.NON_NULL)
             }
         }
