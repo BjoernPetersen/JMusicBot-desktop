@@ -1,10 +1,5 @@
 package net.bjoernpetersen.deskbot.rest.location
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.zafarkhaja.semver.ParseException
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
@@ -47,19 +42,6 @@ class Version {
             throw IllegalStateException("Could not read version resource", e)
         }
 
-        private fun loadApiVersion(): String {
-            // FIXME can't do that when the spec is gone
-            val openApi: MockOpenApi = ObjectMapper(YAMLFactory())
-                .registerModule(KotlinModule())
-                .readValue(this::class.java.getResource("/openapi/MusicBot.yaml"))
-
-            return openApi.info.version
-        }
-
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        private data class MockOpenApi(val info: MockInfo)
-
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        private data class MockInfo(val version: String)
+        private fun loadApiVersion(): String = "0.13.0"
     }
 }
