@@ -1,4 +1,4 @@
-@file:Suppress("unused")
+@file:Suppress("unused", "SpreadOperator")
 
 package net.bjoernpetersen.deskbot.view
 
@@ -11,6 +11,8 @@ import javafx.beans.binding.IntegerBinding
 import javafx.beans.binding.LongBinding
 import javafx.beans.binding.ObjectBinding
 import javafx.beans.binding.StringBinding
+
+// TODO: These methods are pretty terrible performance-wise (spread operator).
 
 /**
  * Helper function to create a custom [BooleanBinding].

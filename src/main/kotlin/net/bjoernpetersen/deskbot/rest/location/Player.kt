@@ -1,3 +1,5 @@
+@file:Suppress("MatchingDeclarationName")
+
 package net.bjoernpetersen.deskbot.rest.location
 
 import com.google.inject.Injector
@@ -12,11 +14,11 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import mu.KotlinLogging
 import net.bjoernpetersen.deskbot.impl.getValue
-import net.bjoernpetersen.deskbot.rest.require
 import net.bjoernpetersen.deskbot.rest.model.PlayerState
 import net.bjoernpetersen.deskbot.rest.model.PlayerStateAction
 import net.bjoernpetersen.deskbot.rest.model.PlayerStateChange
 import net.bjoernpetersen.deskbot.rest.model.toModel
+import net.bjoernpetersen.deskbot.rest.require
 import net.bjoernpetersen.musicbot.api.auth.Permission
 import net.bjoernpetersen.musicbot.api.player.ProgressTracker
 import net.bjoernpetersen.musicbot.spi.player.Player

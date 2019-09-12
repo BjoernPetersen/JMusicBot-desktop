@@ -18,7 +18,7 @@ import net.bjoernpetersen.musicbot.api.auth.InvalidTokenException
 import net.bjoernpetersen.musicbot.api.auth.User
 import net.bjoernpetersen.musicbot.api.auth.UserManager
 
-private const val BearerKey = "CustomBearer"
+private const val BEARER_KEY = "CustomBearer"
 const val AUTH_REALM = "MusicBot"
 
 class UserPrincipal(val user: User) : Principal
@@ -75,7 +75,7 @@ private fun AuthenticationContext.bearerChallenge(
     cause: AuthenticationFailedCause,
     realm: String,
     scheme: String
-) = challenge(BearerKey, cause) {
+) = challenge(BEARER_KEY, cause) {
     val copied = UnauthorizedResponse(
         bearerAuthChallenge(
             realm,

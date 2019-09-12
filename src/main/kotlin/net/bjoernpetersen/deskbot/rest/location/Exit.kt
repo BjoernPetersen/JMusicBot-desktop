@@ -1,3 +1,5 @@
+@file:Suppress("MatchingDeclarationName")
+
 package net.bjoernpetersen.deskbot.rest.location
 
 import io.ktor.application.call
@@ -22,6 +24,8 @@ private val logger = KotlinLogging.logger {}
 @Location("/exit")
 class ExitRequest
 
+private const val GRACE_PERIOD_MILLIS = 500L
+
 @KtorExperimentalLocationsAPI
 fun Route.routeExit() {
     authenticate {
@@ -29,7 +33,7 @@ fun Route.routeExit() {
             require(Permission.EXIT)
             call.respondEmpty()
             GlobalScope.launch(Dispatchers.Main) {
-                delay(500)
+                delay(GRACE_PERIOD_MILLIS)
                 logger.info { "Closing due to remote user request" }
                 Platform.exit()
             }

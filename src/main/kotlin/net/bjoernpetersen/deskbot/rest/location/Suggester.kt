@@ -13,9 +13,9 @@ import mu.KotlinLogging
 import net.bjoernpetersen.deskbot.impl.getValue
 import net.bjoernpetersen.deskbot.rest.NotFoundException
 import net.bjoernpetersen.deskbot.rest.UnavailableException
+import net.bjoernpetersen.deskbot.rest.model.NamedPlugin
 import net.bjoernpetersen.deskbot.rest.require
 import net.bjoernpetersen.deskbot.rest.respondEmpty
-import net.bjoernpetersen.deskbot.rest.model.NamedPlugin
 import net.bjoernpetersen.musicbot.api.auth.Permission
 import net.bjoernpetersen.musicbot.api.plugin.management.PluginFinder
 import net.bjoernpetersen.musicbot.spi.plugin.BrokenSuggesterException
@@ -25,7 +25,6 @@ import net.bjoernpetersen.musicbot.spi.plugin.Provider
 import net.bjoernpetersen.musicbot.spi.plugin.Suggester
 import net.bjoernpetersen.musicbot.spi.plugin.id
 import javax.inject.Inject
-import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
 
@@ -35,11 +34,15 @@ private val logger = KotlinLogging.logger {}
 @Location("/suggester")
 class SuggestersRequest
 
+private const val MIN = 1
+private const val DEFAULT_MAX = 32
+private const val MAX = 64
+
 @KtorExperimentalLocationsAPI
 @Location("/suggester/{suggesterId}")
 data class SuggestionsRequest(
     val suggesterId: String,
-    val max: Int = 32
+    val max: Int = DEFAULT_MAX
 )
 
 @KtorExperimentalLocationsAPI
@@ -80,7 +83,7 @@ fun Route.routeSuggester(injector: Injector) {
             }
             get<SuggestionsRequest> {
                 val suggester = getSuggester(it.suggesterId) ?: throw NotFoundException()
-                val max = max(1, min(64, it.max))
+                val max = maxOf(MIN, minOf(MAX, it.max))
                 val suggestions = try {
                     suggester.getNextSuggestions(max)
                 } catch (e: BrokenSuggesterException) {
