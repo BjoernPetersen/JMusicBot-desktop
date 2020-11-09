@@ -16,16 +16,19 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
-import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
+import io.ktor.server.engine.applicationEngineEnvironment
+import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.engine.sslConnector
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
-import net.bjoernpetersen.deskbot.rest.location.Version
+import net.bjoernpetersen.deskbot.cert.CertificateHandler
+import net.bjoernpetersen.deskbot.rest.location.VersionConstraints
 import net.bjoernpetersen.deskbot.rest.location.routeExit
 import net.bjoernpetersen.deskbot.rest.location.routePlayer
 import net.bjoernpetersen.deskbot.rest.location.routeProvider
@@ -43,6 +46,7 @@ import net.bjoernpetersen.musicbot.api.image.ImageServerConstraints
 import net.bjoernpetersen.musicbot.spi.auth.TokenHandler
 import net.bjoernpetersen.musicbot.spi.image.ImageCache
 import net.bjoernpetersen.musicbot.spi.plugin.NoSuchSongException
+import net.bjoernpetersen.musicbot.spi.version.Version
 import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -53,90 +57,111 @@ class KtorServer @Inject private constructor(
     private val userManager: UserManager,
     private val tokenHandler: TokenHandler,
     private val imageCache: ImageCache,
-    private val injector: Injector
+    private val injector: Injector,
+    private val certificateHandler: CertificateHandler,
+    private val version: Version
 ) {
     private val logger = KotlinLogging.logger {}
-    private val server: ApplicationEngine = embeddedServer(Netty, port = ServerConstraints.port) {
-        install(CORS) {
-            anyHost()
-            allowCredentials = true
-            allowNonSimpleContentTypes = true
-            method(HttpMethod.Put)
-            method(HttpMethod.Delete)
-            header(HttpHeaders.Authorization)
+    private val env = applicationEngineEnvironment {
+        val certificate = certificateHandler.certificate
+        sslConnector(
+            certificate.keystore,
+            certificate.getAlias()!!,
+            { certificate.passphrase.toCharArray() },
+            { certificate.passphrase.toCharArray() }
+        ) {
+            host = "0.0.0.0"
+            port = ServerConstraints.port + 1
         }
 
-        install(StatusPages) {
-            expectAuth()
-            exception<AuthExpectationException> {
-                call.respond(HttpStatusCode.Unauthorized, it.authExpectation)
-            }
-            exception<StatusException> {
-                call.respond(it.code, it.message ?: "")
-            }
-            exception<IllegalArgumentException> {
-                logger.debug(it) { "IllegalArgumentException from pipeline" }
-                call.respond(HttpStatusCode.BadRequest, it.message ?: "")
-            }
-            exception<NoSuchSongException> {
-                call.respond(HttpStatusCode.NotFound, it.message ?: "Song not found.")
-            }
-        }
-        install(DataConversion)
-        install(ContentNegotiation) {
-            jackson {
-                setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            }
+        connector {
+            host = "0.0.0.0"
+            port = ServerConstraints.port
         }
 
-        install(Authentication) {
-            register(BearerAuthentication(tokenHandler))
-            register(RefreshTokenAuthentication(tokenHandler, "RefreshToken"))
-            basic("Basic") {
-                realm = AUTH_REALM
-                validate {
-                    try {
-                        val user = userManager.getUser(it.name)
-                        if (user.hasPassword(it.password)) {
-                            UserPrincipal(user)
-                        } else throw AuthExpectationException(
-                            basicExpect(user.type)
-                        )
-                    } catch (e: UserNotFoundException) {
-                        throw NotFoundException()
+        this.module {
+            install(CORS) {
+                anyHost()
+                allowCredentials = true
+                allowNonSimpleContentTypes = true
+                method(HttpMethod.Put)
+                method(HttpMethod.Delete)
+                header(HttpHeaders.Authorization)
+            }
+            install(StatusPages) {
+                expectAuth()
+                exception<AuthExpectationException> {
+                    call.respond(HttpStatusCode.Unauthorized, it.authExpectation)
+                }
+                exception<StatusException> {
+                    call.respond(it.code, it.message ?: "")
+                }
+                exception<IllegalArgumentException> {
+                    logger.debug(it) { "IllegalArgumentException from pipeline" }
+                    call.respond(HttpStatusCode.BadRequest, it.message ?: "")
+                }
+                exception<NoSuchSongException> {
+                    call.respond(HttpStatusCode.NotFound, it.message ?: "Song not found.")
+                }
+            }
+            install(DataConversion)
+            install(ContentNegotiation) {
+                jackson {
+                    setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                }
+            }
+
+            install(Authentication) {
+                register(BearerAuthentication(tokenHandler))
+                register(RefreshTokenAuthentication(tokenHandler, "RefreshToken"))
+                basic("Basic") {
+                    realm = AUTH_REALM
+                    validate {
+                        try {
+                            val user = userManager.getUser(it.name)
+                            if (user.hasPassword(it.password)) {
+                                UserPrincipal(user)
+                            } else throw AuthExpectationException(
+                                basicExpect(user.type)
+                            )
+                        } catch (e: UserNotFoundException) {
+                            throw NotFoundException()
+                        }
                     }
                 }
             }
-        }
 
-        install(Locations)
+            install(Locations)
 
-        routing {
-            get<Version> {
-                call.respond(Version.versionInfo)
-            }
+            routing {
 
-            routePlayer(injector)
-            routeUser(injector)
-            routeProvider(injector)
-            routeSuggester(injector)
-            routeVolume(injector)
-            routeQueue(injector)
-            routeExit()
+                get(VersionConstraints.PATH) {
+                    call.respond(version)
+                }
 
-            get("${ImageServerConstraints.LOCAL_PATH}/{providerId}/{songId}") {
-                val providerId = call.parameters["providerId"]!!.decode()
-                val songId = call.parameters["songId"]!!.decode()
-                val image = imageCache.getLocal(providerId, songId)
-                call.respondImage(image)
-            }
-            get("${ImageServerConstraints.REMOTE_PATH}/{url}") {
-                val url = call.parameters["url"]!!.decode()
-                val image = imageCache.getRemote(url)
-                call.respondImage(image)
+                routePlayer(injector)
+                routeUser(injector)
+                routeProvider(injector)
+                routeSuggester(injector)
+                routeVolume(injector)
+                routeQueue(injector)
+                routeExit()
+
+                get("${ImageServerConstraints.LOCAL_PATH}/{providerId}/{songId}") {
+                    val providerId = call.parameters["providerId"]!!.decode()
+                    val songId = call.parameters["songId"]!!.decode()
+                    val image = imageCache.getLocal(providerId, songId)
+                    call.respondImage(image)
+                }
+                get("${ImageServerConstraints.REMOTE_PATH}/{url}") {
+                    val url = call.parameters["url"]!!.decode()
+                    val image = imageCache.getRemote(url)
+                    call.respondImage(image)
+                }
             }
         }
     }
+    private val server: ApplicationEngine = embeddedServer(Netty, env)
 
     fun start() {
         server.start()

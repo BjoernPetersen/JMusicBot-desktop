@@ -67,3 +67,4 @@ gradle.properties
 /plugins/
 UserDatabase.db
 /storage/
+*.jks

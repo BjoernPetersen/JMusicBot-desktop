@@ -188,6 +188,11 @@ dependencies {
         name = "guice-extension",
         version = Lib.JUNIT_GUICE
     )
+    testImplementation(
+        group = "io.ktor",
+        name = "ktor-network-tls",
+        version = Lib.KTOR
+    )
     testImplementation(group = "io.mockk", name = "mockk", version = Lib.MOCK_K)
     testImplementation(group = "org.assertj", name = "assertj-core", version = Lib.ASSERT_J)
 }

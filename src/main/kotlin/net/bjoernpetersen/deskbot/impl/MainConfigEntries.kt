@@ -19,12 +19,14 @@ import net.bjoernpetersen.musicbot.api.config.DeserializationException
 import net.bjoernpetersen.musicbot.api.config.MainConfigScope
 import net.bjoernpetersen.musicbot.api.config.NonnullConfigChecker
 import net.bjoernpetersen.musicbot.api.config.PathSerializer
+import net.bjoernpetersen.musicbot.api.config.TextBox
 import net.bjoernpetersen.musicbot.api.config.actionButton
 import net.bjoernpetersen.musicbot.api.config.choiceBox
 import net.bjoernpetersen.musicbot.api.config.listSerializer
 import net.bjoernpetersen.musicbot.api.config.openDirectory
 import net.bjoernpetersen.musicbot.api.config.serialized
 import net.bjoernpetersen.musicbot.api.config.setSerializer
+import net.bjoernpetersen.musicbot.api.config.string
 import net.bjoernpetersen.musicbot.api.plugin.DeclarationException
 import net.bjoernpetersen.musicbot.api.plugin.PluginId
 import net.bjoernpetersen.musicbot.api.plugin.id
@@ -166,13 +168,22 @@ class MainConfigEntries @Inject constructor(
         }
     }
 
+    val instanceName = plain.StringEntry(
+        "instanceName",
+        "A name to identify this instance by. Will be used for registrations and when displayed by clients",
+        NonnullConfigChecker,
+        TextBox,
+        "NamelessBot"
+    )
+
     val allPlain: List<Config.Entry<*>> = listOf(
         defaultSuggester,
         storageDir,
         loadAlbumArt,
         defaultPermissions,
         providerOrder,
-        suggesterOrder
+        suggesterOrder,
+        instanceName
     )
     val allSecret: List<Config.Entry<*>> = listOf()
 }

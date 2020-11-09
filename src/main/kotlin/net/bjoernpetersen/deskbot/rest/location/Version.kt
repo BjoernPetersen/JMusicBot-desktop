@@ -1,36 +1,25 @@
 package net.bjoernpetersen.deskbot.rest.location
 
 import com.github.zafarkhaja.semver.ParseException
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
-import net.bjoernpetersen.deskbot.rest.model.ImplementationInfo
-import net.bjoernpetersen.deskbot.rest.model.VersionInfo
+import com.google.inject.AbstractModule
+import com.google.inject.Provides
+import net.bjoernpetersen.deskbot.impl.MainConfigEntries
+import net.bjoernpetersen.musicbot.spi.version.ImplementationInfo
+import net.bjoernpetersen.musicbot.spi.version.Version
 import java.io.IOException
 import java.util.Properties
+import javax.inject.Singleton
 
 private const val PROJECT_PAGE = "https://github.com/BjoernPetersen/MusicBot-desktop"
 private const val PROJECT_NAME = "DeskBot"
 
-@KtorExperimentalLocationsAPI
-@Location("/version")
-class Version {
+object VersionConstraints {
+    const val PATH = "/version"
+}
+
+class VersionModule() : AbstractModule() {
+
     companion object {
-        val versionInfo: VersionInfo by lazy { loadInfo() }
-
-        private fun loadInfo(): VersionInfo {
-            val implVersion = loadImplementationVersion()
-            val apiVersion = loadApiVersion()
-            return VersionInfo(
-                apiVersion,
-                "Nameless bot",
-                ImplementationInfo(
-                    PROJECT_PAGE,
-                    PROJECT_NAME,
-                    implVersion
-                )
-            )
-        }
-
         private fun loadImplementationVersion() = try {
             val properties = Properties()
             Version::class.java
@@ -44,5 +33,19 @@ class Version {
         }
 
         private fun loadApiVersion(): String = "0.15.3"
+    }
+
+    @Provides
+    @Singleton
+    fun provideVersion(configEntries: MainConfigEntries): Version {
+        val apiVersion = loadApiVersion()
+        val botName = configEntries.instanceName.get()!!
+        val implementation =
+            ImplementationInfo(
+                PROJECT_PAGE,
+                PROJECT_NAME,
+                loadImplementationVersion()
+            )
+        return Version(apiVersion, botName, implementation)
     }
 }

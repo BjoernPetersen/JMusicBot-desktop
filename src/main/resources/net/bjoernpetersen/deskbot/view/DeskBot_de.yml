@@ -50,3 +50,6 @@ task:
   plugin:
     title: 'Lade %s: %s'
     waiting: 'Warte auf anderes Plugin: %s %s'
+  cert:
+    title: Erstelle Zertifikat
+    description: Die Validierung eines neuen Zertifikats kann eine Weile dauern.
